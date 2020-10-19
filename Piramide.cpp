@@ -17,7 +17,6 @@ Piramide::Piramide() {
 Piramide::~Piramide() {}
 
 
-
 // Initialize OpenGL
 void Piramide::initializeGL() {
     glShadeModel(GL_SMOOTH); // Enable smooth shading
@@ -30,7 +29,7 @@ void Piramide::initializeGL() {
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Really nice perspective calculations
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    DLid = createDL();
+    DLid = createDL(); //cria lista
 }
 
 // This is called when the OpenGL window is resized
@@ -50,7 +49,7 @@ void Piramide::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    // Sky
+    // Desenha Ceu
     glPushMatrix();
      glColor3f(0.2,0.8,0.9);
         glTranslatef(0,0,-100);
@@ -65,7 +64,7 @@ void Piramide::paintGL() {
     glRotatef(yrot, 0.0, 1.0, 0.0);
     glRotatef(xrot, 1.0, 0.0, 0.0);
     glColor3f(0.5, 0.8, 0.3);
-    //World
+    //Desenha solo
     glBegin(GL_QUADS);
         glVertex3f(-200,-1,200);
         glVertex3f(-200,-1,-200);
@@ -73,7 +72,7 @@ void Piramide::paintGL() {
         glVertex3f(200,-1,200);
     glEnd();
 
-    glCallList(DLid);
+    glCallList(DLid); //chama lista de exibição
 }
 
 // Key handler
@@ -184,10 +183,10 @@ void Piramide::desenhaCubo() {
 GLuint Piramide::createDL() {
     GLuint blockDL;
 
-    blockDL = glGenLists(1);
+    blockDL = glGenLists(1); //aloca o numero de IDs
 
-    glNewList(blockDL,GL_COMPILE);
-    int quantidadeNiveis=15;
+    glNewList(blockDL,GL_COMPILE); //inclue na lista
+    int quantidadeNiveis=15; //Quantidade de niveis na piramide
     for(int y=quantidadeNiveis; y>0; y--){
         int quantBlocosLinha = (2*y)-1;
         for(int x=0; x < quantBlocosLinha; x++){
