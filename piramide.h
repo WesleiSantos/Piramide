@@ -3,7 +3,9 @@
 
 #include <QGLWidget>
 #include <QHash>
+#include <QTime>
 
+class QTimer;
 
 class Piramide : public QGLWidget
 {
@@ -24,6 +26,9 @@ protected:
     void changeEvent(QEvent *event);
     void desenhaCubo();
     GLuint createDL();
+
+private:
+    QTimer *timer;
 };
 #endif // PIRAMIDE_H
 

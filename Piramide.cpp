@@ -3,14 +3,19 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <math.h>
+#include <QTimer>
 
-GLint cartaSelecionada = 6;
-float xrot=0.f;
+GLint LAST_NVL=45;//ultimo nivel da pirâmide
+GLfloat escala=1;
 float yrot=0.0;
 GLint DLid;
 // Constructor
 Piramide::Piramide() {
     setWindowTitle("Piramide");
+
+    timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, SIGNAL(timeout()),this,SLOT(updateGL()));
 }
 
 // Empty destructor
@@ -35,54 +40,59 @@ void Piramide::initializeGL() {
 // This is called when the OpenGL window is resized
 void Piramide::resizeGL(int width, int height) {
     glViewport(0, 0, width, height);
+
     glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45.0f, static_cast<GLfloat>(width)/height,0.1f, 1000.0f); // Calculate aspect ratio
+    glLoadIdentity(); // Reset projection matrix
+
+    gluPerspective(45.0f, static_cast<GLfloat>(width)/height, 5.f, LAST_NVL*10); // Calculate aspect ratio
+
     // Especifica posição do observador e do alvo
-    gluLookAt(-5.f,20.f,70.f, 0,0,0, 0,1,0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    gluLookAt(0.f,0.f,LAST_NVL+100, 0,-40,0, 0,1,0);
 }
 
 // OpenGL painting code goes here
 void Piramide::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    glScalef(escala, escala, escala);
+    escala=1;//para impede o aumento da escala no proximo frame
     // Desenha Ceu
     glPushMatrix();
+    glLoadIdentity();
      glColor3f(0.2,0.8,0.9);
         glTranslatef(0,0,-100);
         glBegin(GL_QUADS);
-            glVertex3f(-200,100,0);
-            glVertex3f(200,100,0);
-            glVertex3f(100,-100,0);
-            glVertex3f(-100,-100,0);
+            glVertex3f(-2000,1000,0);
+            glVertex3f(2000,1000,0);
+            glVertex3f(1000,-1000,0);
+            glVertex3f(-1000,-1000,0);
         glEnd();
     glPopMatrix();
-    glTranslatef(0,0,-10);
     glRotatef(yrot, 0.0, 1.0, 0.0);
-    glRotatef(xrot, 1.0, 0.0, 0.0);
     glColor3f(0.5, 0.8, 0.3);
     //Desenha solo
     glBegin(GL_QUADS);
-        glVertex3f(-200,-1,200);
-        glVertex3f(-200,-1,-200);
-        glVertex3f(200,-1,-200);
-        glVertex3f(200,-1,200);
+        glVertex3f(-200,-46,200);
+        glVertex3f(-200,-46,-200);
+        glVertex3f(200,-46,-200);
+        glVertex3f(200,-46,200);
     glEnd();
 
     glCallList(DLid); //chama lista de exibição
+
+    if ( yrot != 0.0 ) {//economizar processamento quando não tem mudança no angul da piramide
+        timer->start(30);
+    }
 }
 
 // Key handler
 void Piramide::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
     case Qt::Key_Up:
-        xrot+=1;
+        escala=1.1;
         break;
     case Qt::Key_Down:
-        xrot-=1;
+        escala=0.91;
         break;
     case Qt::Key_Right:
         yrot += 1;
@@ -186,15 +196,17 @@ GLuint Piramide::createDL() {
     blockDL = glGenLists(1); //aloca o numero de IDs
 
     glNewList(blockDL,GL_COMPILE); //inclue na lista
-    int quantidadeNiveis=15; //Quantidade de niveis na piramide
-    for(int y=quantidadeNiveis; y>0; y--){
-        int quantBlocosLinha = (2*y)-1;
-        for(int x=0; x < quantBlocosLinha; x++){
-            for(int z=0; z < quantBlocosLinha; z++){
-                glPushMatrix();
-                glTranslatef(x+(quantidadeNiveis-y),(y-quantidadeNiveis)*-1, z+(quantidadeNiveis-y));
-                desenhaCubo();
-                glPopMatrix();
+    for (int nvl = 0; nvl < LAST_NVL; nvl++ ){//para determinar o nivel atual da piramide ou o Y onde o cubo sera desenhado
+        for (int x=-nvl; x <= nvl ; x++) {// para determinar a coordena X onde o cubo sera desenhado
+            for ( int z=-nvl; z <= nvl; z++) {// para determinar a coordena Z onde o cubo sera desenhado
+                if( (nvl == 0 || nvl == LAST_NVL) ||
+                     (x == -nvl || x == nvl) ||
+                     (z == -nvl || z == nvl)
+                  ){// apenas desenhar os cubos que estão expõe a aréa externa da piramide
+                    glTranslatef(x, -nvl, z);
+                    desenhaCubo();
+                    glTranslatef(-x, nvl, -z);
+                }
             }
         }
     }
