@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/img">
+        <file>Crate.bmp</file>
+        <file>texture.bmp</file>
+    </qresource>
+</RCC>
