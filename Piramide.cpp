@@ -21,7 +21,6 @@ Piramide::Piramide() {
 // Empty destructor
 Piramide::~Piramide() {}
 
-
 // Initialize OpenGL
 void Piramide::initializeGL() {
     glShadeModel(GL_SMOOTH); // Enable smooth shading
@@ -29,8 +28,8 @@ void Piramide::initializeGL() {
 
     glClearDepth(1.0f); // Depth buffer setup
     glEnable(GL_DEPTH_TEST); // Enable depth testing
-    glDepthFunc(GL_LEQUAL); // Set type of depth test
-
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Really nice perspective calculations
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -71,7 +70,7 @@ void Piramide::initializeGL() {
      // Set up lighting
      GLfloat ambLight[] = {1, 1, 1, 1.0f};
      GLfloat diffLight[] = {1.0f, 1.0f, 1.0f, 1.0f};
-     GLfloat lightPos[] = {100, 100.f,100 ,.0f};
+     GLfloat lightPos[] = {0, 100, 0 , 0.0f};
      // Ativa o uso da luz ambiente
      glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambLight);
      glLightfv(GL_LIGHT1, GL_AMBIENT, ambLight);
@@ -125,14 +124,14 @@ void Piramide::paintGL() {
     glBindTexture(GL_TEXTURE_2D, _texturaSolo);
     glBegin(GL_QUADS);
         glTexCoord3f(0,0,0);glVertex3f(-400,-46,400);
-         glTexCoord3f(1,0,0);glVertex3f(-400,-46,-400);
+        glTexCoord3f(1,0,0);glVertex3f(-400,-46,-400);
         glTexCoord3f(1,1,0);glVertex3f(400,-46,-400);
         glTexCoord3f(0,1,0);glVertex3f(400,-46,400);
     glEnd();
 
     glCallList(DLid); //chama lista de exibição
 
-    if ( yrot != 0.0 ) {//economizar processamento quando não tem mudança no angul da piramide
+    if ( yrot != 0.0 ) {//economizar processamento quando não tem mudança no angulo da piramide
         timer->start(30);
     }
 }
@@ -186,7 +185,6 @@ void Piramide::changeEvent(QEvent *event) {
 }
 
 void Piramide::desenhaCubo() {
-    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
     //Base
     glBegin(GL_QUADS);  // Wall
         glTexCoord3f(0,0,0);glVertex3f(0,-1,0);
@@ -194,7 +192,7 @@ void Piramide::desenhaCubo() {
         glTexCoord3f(1,1,0);glVertex3f(1,-1,1);
         glTexCoord3f(0,1,0);glVertex3f(1,-1,0);
     glEnd();
-    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
+
     //Front
     glBegin(GL_QUADS);  // Wall
         glTexCoord3f(0,0,0);glVertex3f(1,-1,1);
@@ -203,7 +201,6 @@ void Piramide::desenhaCubo() {
         glTexCoord3f(0,1,0);glVertex3f(1,0,1);
     glEnd();
 
-    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
     // Back
     glBegin(GL_QUADS);  // Wall
         glTexCoord3f(0,0,0);glVertex3f(0,-1,1);
@@ -211,7 +208,7 @@ void Piramide::desenhaCubo() {
         glTexCoord3f(1,1,0); glVertex3f(0,0,0);
         glTexCoord3f(0,1,0);glVertex3f(0,0,1);
     glEnd();
-    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
+
     // Top
     glBegin(GL_QUADS);  // Wall
         glTexCoord3f(0,0,0);glVertex3f(0,0,1);
@@ -219,7 +216,7 @@ void Piramide::desenhaCubo() {
         glTexCoord3f(1,1,0);glVertex3f(1,0,0);
         glTexCoord3f(0,1,0); glVertex3f(1,0,1);
     glEnd();
-    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
+
     // Left
     glBegin(GL_QUADS);  // Wall
         glTexCoord3f(0,0,1);glVertex3f(0,-1,1);
@@ -227,7 +224,7 @@ void Piramide::desenhaCubo() {
         glTexCoord3f(1,1,1);glVertex3f(1,0,1);
         glTexCoord3f(0,1,1);glVertex3f(0,0,1);
     glEnd();
-    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
+
     // Right
     glBegin(GL_QUADS);  // Wall
         glTexCoord3f(0,0,1);glVertex3f(0,-1,0);
@@ -246,6 +243,8 @@ GLuint Piramide::createDL() {
     blockDL = glGenLists(1); //aloca o numero de IDs
 
     glNewList(blockDL,GL_COMPILE); //inclue na lista
+    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
+
     for (int nvl = 0; nvl < LAST_NVL; nvl++ ){//para determinar o nivel atual da piramide ou o Y onde o cubo sera desenhado
         for (int x=-nvl; x <= nvl ; x++) {// para determinar a coordena X onde o cubo sera desenhado
             for ( int z=-nvl; z <= nvl; z++) {// para determinar a coordena Z onde o cubo sera desenhado
