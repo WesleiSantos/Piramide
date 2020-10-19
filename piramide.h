@@ -29,6 +29,10 @@ protected:
 
 private:
     QTimer *timer;
+    //define texturas que seram usadas no programa
+    GLuint _texturaCeu, _texturaSolo, _texturaBloco;
+
+
 };
 #endif // PIRAMIDE_H
 

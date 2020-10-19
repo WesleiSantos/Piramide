@@ -34,7 +34,59 @@ void Piramide::initializeGL() {
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Really nice perspective calculations
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    DLid = createDL(); //cria lista
+    //Habilita o uso de texturas
+     glEnable(GL_TEXTURE_2D);
+     //carrega uma imagem BMP
+     QImage imgBloco = convertToGLFormat(QImage("bloco.jpg"));
+     QImage imgCeu = convertToGLFormat(QImage("ceu.jpg"));
+     QImage imgSolo = convertToGLFormat(QImage("solo.jpg"));
+
+     //definir a forma de armazenamento dos pixeis na textura (1 = alinhamento por byte)
+     glGenTextures(1, &_texturaBloco); //Make room for our texture
+     //define a textura corrente
+     glBindTexture(GL_TEXTURE_2D,_texturaBloco);
+     //GL_TEXTURE_2D ==> define que será usanda uma textura 2D (bitmaps)
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgBloco.width(), imgBloco.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, imgBloco.bits());
+
+     //definir a forma de armazenamento dos pixeis na textura (1 = alinhamento por byte)
+     glGenTextures(1, &_texturaCeu); //Make room for our texture
+     //define a textura corrente
+     glBindTexture(GL_TEXTURE_2D, _texturaCeu);
+     //GL_TEXTURE_2D ==> define que será usanda uma textura 2D (bitmaps)
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgCeu.width(), imgCeu.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, imgCeu.bits());
+
+     //definir a forma de armazenamento dos pixeis na textura (1 = alinhamento por byte)
+     glGenTextures(1, &_texturaSolo); //Make room for our texture
+     //define a textura corrente
+     glBindTexture(GL_TEXTURE_2D, _texturaSolo);
+     //GL_TEXTURE_2D ==> define que será usanda uma textura 2D (bitmaps)
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgSolo.width(), imgSolo.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, imgSolo.bits());
+
+     // Set up lighting
+     GLfloat ambLight[] = {1, 1, 1, 1.0f};
+     GLfloat diffLight[] = {1.0f, 1.0f, 1.0f, 1.0f};
+     GLfloat lightPos[] = {100, 100.f,100 ,.0f};
+     // Ativa o uso da luz ambiente
+     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambLight);
+     glLightfv(GL_LIGHT1, GL_AMBIENT, ambLight);
+     glLightfv(GL_LIGHT1, GL_DIFFUSE, diffLight);
+     glLightfv(GL_LIGHT1, GL_POSITION, lightPos);
+     // Habilita a definição da cor do material a partir da cor corrente
+     glEnable(GL_COLOR_MATERIAL);
+     //Habilita o uso de iluminação
+     glEnable(GL_LIGHTING);
+     // Habilita a luz de número 1
+     glEnable(GL_LIGHT1);
+     // Habilita o depth-buffering
+     glEnable(GL_DEPTH_TEST);
+
+     DLid = createDL(); //cria lista
 }
 
 // This is called when the OpenGL window is resized
@@ -59,23 +111,23 @@ void Piramide::paintGL() {
     // Desenha Ceu
     glPushMatrix();
     glLoadIdentity();
-     glColor3f(0.2,0.8,0.9);
-        glTranslatef(0,0,-100);
+     glBindTexture(GL_TEXTURE_2D, _texturaCeu);
+        glTranslatef(0,0,-200);
         glBegin(GL_QUADS);
-            glVertex3f(-2000,1000,0);
-            glVertex3f(2000,1000,0);
-            glVertex3f(1000,-1000,0);
-            glVertex3f(-1000,-1000,0);
+            glTexCoord3f(0,0,0);glVertex3f(-2000,1000,0);
+            glTexCoord3f(1,0,0);glVertex3f(2000,1000,0);
+            glTexCoord3f(1,1,0);glVertex3f(1000,-1000,0);
+            glTexCoord3f(0,1,0);glVertex3f(-1000,-1000,0);
         glEnd();
     glPopMatrix();
     glRotatef(yrot, 0.0, 1.0, 0.0);
-    glColor3f(0.5, 0.8, 0.3);
     //Desenha solo
+    glBindTexture(GL_TEXTURE_2D, _texturaSolo);
     glBegin(GL_QUADS);
-        glVertex3f(-200,-46,200);
-        glVertex3f(-200,-46,-200);
-        glVertex3f(200,-46,-200);
-        glVertex3f(200,-46,200);
+        glTexCoord3f(0,0,0);glVertex3f(-400,-46,400);
+         glTexCoord3f(1,0,0);glVertex3f(-400,-46,-400);
+        glTexCoord3f(1,1,0);glVertex3f(400,-46,-400);
+        glTexCoord3f(0,1,0);glVertex3f(400,-46,400);
     glEnd();
 
     glCallList(DLid); //chama lista de exibição
@@ -134,56 +186,54 @@ void Piramide::changeEvent(QEvent *event) {
 }
 
 void Piramide::desenhaCubo() {
-     glColor3f(10,20,0);
-    // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );    //Desenha apenas as linhas do polígono
-      //  glLineWidth(4);
+    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
     //Base
     glBegin(GL_QUADS);  // Wall
-    glVertex3f(0,-1,0);
-    glVertex3f(0,-1,1);
-    glVertex3f(1,-1,1);
-    glVertex3f(1,-1,0);
+        glTexCoord3f(0,0,0);glVertex3f(0,-1,0);
+        glTexCoord3f(1,0,0);glVertex3f(0,-1,1);
+        glTexCoord3f(1,1,0);glVertex3f(1,-1,1);
+        glTexCoord3f(0,1,0);glVertex3f(1,-1,0);
     glEnd();
-
+    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
     //Front
     glBegin(GL_QUADS);  // Wall
-    glVertex3f(1,-1,1);
-    glVertex3f(1,-1,0);
-    glVertex3f(1,0,0);
-    glVertex3f(1,0,1);
+        glTexCoord3f(0,0,0);glVertex3f(1,-1,1);
+        glTexCoord3f(1,0,0);glVertex3f(1,-1,0);
+        glTexCoord3f(1,1,0);glVertex3f(1,0,0);
+        glTexCoord3f(0,1,0);glVertex3f(1,0,1);
     glEnd();
 
-
+    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
     // Back
     glBegin(GL_QUADS);  // Wall
-    glVertex3f(0,-1,1);
-    glVertex3f(0,-1,0);
-    glVertex3f(0,0,0);
-    glVertex3f(0,0,1);
+        glTexCoord3f(0,0,0);glVertex3f(0,-1,1);
+       glTexCoord3f(1,0,0);glVertex3f(0,-1,0);
+        glTexCoord3f(1,1,0); glVertex3f(0,0,0);
+        glTexCoord3f(0,1,0);glVertex3f(0,0,1);
     glEnd();
-
+    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
     // Top
     glBegin(GL_QUADS);  // Wall
-    glVertex3f(0,0,1);
-    glVertex3f(0,0,0);
-    glVertex3f(1,0,0);
-    glVertex3f(1,0,1);
+        glTexCoord3f(0,0,0);glVertex3f(0,0,1);
+        glTexCoord3f(1,0,0);glVertex3f(0,0,0);
+        glTexCoord3f(1,1,0);glVertex3f(1,0,0);
+        glTexCoord3f(0,1,0); glVertex3f(1,0,1);
     glEnd();
-
+    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
     // Left
     glBegin(GL_QUADS);  // Wall
-    glVertex3f(0,-1,1);
-    glVertex3f(1,-1,1);
-    glVertex3f(1,0,1);
-    glVertex3f(0,0,1);
+        glTexCoord3f(0,0,1);glVertex3f(0,-1,1);
+        glTexCoord3f(1,0,1); glVertex3f(1,-1,1);
+        glTexCoord3f(1,1,1);glVertex3f(1,0,1);
+        glTexCoord3f(0,1,1);glVertex3f(0,0,1);
     glEnd();
-
+    glBindTexture(GL_TEXTURE_2D, _texturaBloco);
     // Right
     glBegin(GL_QUADS);  // Wall
-    glVertex3f(0,-1,0);
-    glVertex3f(1,-1,0);
-    glVertex3f(1,0,0);
-    glVertex3f(0,0,0);
+        glTexCoord3f(0,0,1);glVertex3f(0,-1,0);
+        glTexCoord3f(1,0,1); glVertex3f(1,-1,0);
+        glTexCoord3f(1,1,1);glVertex3f(1,0,0);
+        glTexCoord3f(0,1,1); glVertex3f(0,0,0);
     glEnd();
 
 

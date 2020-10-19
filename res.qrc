@@ -1,6 +1,10 @@
 <RCC>
-    <qresource prefix="/img">
-        <file>Crate.bmp</file>
-        <file>texture.bmp</file>
+    <qresource prefix="/img"/>
+    <qresource prefix="/">
+        <file>bloco.jpg</file>
+        <file>ceu.jpg</file>
+        <file>grass.bmp</file>
+        <file>sky.bmp</file>
+        <file>solo.jpg</file>
     </qresource>
 </RCC>
